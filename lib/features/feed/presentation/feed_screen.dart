@@ -50,8 +50,8 @@ class _FinanceVisualizerScreenState extends State<FinanceVisualizerScreen> {
   @override
   Widget build(BuildContext context) {
     final total = income + expense;
-    final incomePercent = total > 0 ? (income / total) : 0;
-    final expensePercent = total > 0 ? (expense / total) : 0;
+    final incomePercent = total > 0 ? (income / total) : 0.0;
+    final expensePercent = total > 0 ? (expense / total) : 0.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -75,7 +75,7 @@ class _FinanceVisualizerScreenState extends State<FinanceVisualizerScreen> {
                       animation: true,
                       percent: 1.0,
                       circularStrokeCap: CircularStrokeCap.round,
-                      backgroundColor: Colors.grey[200],
+                      backgroundColor: Colors.grey,
                       footer: Padding(
                         padding: const EdgeInsets.only(top: 20.0),
                         child: Text(
