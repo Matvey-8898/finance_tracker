@@ -15,10 +15,10 @@ class _NavigationWrapperState extends State<NavigationWrapper> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
-    const HomeScreen(),
-    const FeedScreen(),
-    const ServicesScreen(),
-    const SettingsScreen(),
+    FinanceSummaryScreen(),
+    FinanceVisualizerApp(),
+    FinanceTracker(),
+    MyApp(),
   ];
 
   final List<BottomNavigationBarItem> _bottomNavBarItems = [

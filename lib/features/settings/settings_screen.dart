@@ -1,111 +1,220 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_application_1/main.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart'
+    show
+        AppBar,
+        BuildContext,
+        Center,
+        Color,
+        Colors,
+        Column,
+        CrossAxisAlignment,
+        EdgeInsets,
+        ElevatedButton,
+        GlobalKey,
+        MainAxisAlignment,
+        MaterialApp,
+        Navigator,
+        NavigatorState,
+        Padding,
+        Row,
+        Scaffold,
+        SizedBox,
+        State,
+        StatefulWidget,
+        StatelessWidget,
+        Text,
+        TextStyle,
+        ThemeData,
+        ValueListenableBuilder,
+        ValueNotifier,
+        Widget,
+        Wrap,
+        runApp;
 
-class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
-
-  @override
-  _SettingsScreenState createState() => _SettingsScreenState();
+void main() {
+  runApp(MyApp());
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
-  late ThemeMode currentTheme;
-  bool _isLoading = true;
+// Глобальный ключ для доступа к состоянию из любого места
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+class MyApp extends StatelessWidget {
+  // Глобальный цвет, который будет использоваться во всех окнах
+  static ValueNotifier<Color> appColor = ValueNotifier<Color>(Colors.white);
 
   @override
-  void initState() {
-    super.initState();
-    loadTheme();
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<Color>(
+      valueListenable: appColor,
+      builder: (context, color, child) {
+        return MaterialApp(
+          title: 'Многооконное приложение',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+            scaffoldBackgroundColor: color,
+          ),
+          navigatorKey: navigatorKey,
+          initialRoute: '/',
+          routes: {
+            '/': (context) => FirstWindow(),
+            '/second': (context) => SecondWindow(),
+            '/third': (context) => ThirdWindow(),
+            '/fourth': (context) => FourthWindow(),
+          },
+        );
+      },
+    );
   }
+}
 
+class FirstWindow extends StatefulWidget {
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // Now it's safe to access inherited widgets
-    if (_isLoading) {
-      currentTheme =
-          Theme.of(context).brightness == Brightness.dark
-              ? ThemeMode.dark
-              : ThemeMode.light;
-      loadTheme();
-    }
-  }
+  _FirstWindowState createState() => _FirstWindowState();
+}
 
-  Future<void> loadTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    final theme = prefs.getString('theme') ?? 'system';
-    setState(() {
-      currentTheme = ThemeMode.values.firstWhere(
-        (e) => e.toString() == 'ThemeMode.$theme',
-        orElse: () => ThemeMode.system,
-      );
-    });
-  }
+class _FirstWindowState extends State<FirstWindow> {
+  bool _showColorButtons = false;
 
-  Future<void> changeTheme(ThemeMode theme) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('theme', theme.toString().split('.').last);
-    setState(() {
-      currentTheme = theme;
-    });
+  final Map<String, Color> _colorOptions = {
+    'СИНИЙ': Colors.blue,
+    'ЧЕРНЫЙ': Colors.black,
+    'РОЗОВЫЙ': Colors.pink,
+    'ОРАНЖЕВЫЙ': Colors.orange,
+    'ЖЕЛТЫЙ': Colors.yellow,
+    'ЗЕЛЕНЫЙ': Colors.green,
+  };
+
+  void _changeAllWindowsColor(Color color) {
+    MyApp.appColor.value = color;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Настройки')),
+      appBar: AppBar(title: Text('Окно 1 - Настройки цвета')),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Тема'),
-            const SizedBox(height: 8),
-            Card(
-              child: Column(
-                children: [
-                  RadioListTile(
-                    title: const Text('Светлая'),
-                    value: ThemeMode.light,
-                    groupValue: currentTheme,
-                    onChanged: (ThemeMode? value) {
-                      if (value != null) {
-                        MainApp.of(context)?.changeTheme(value);
-                        setState(() {
-                          currentTheme = value;
-                        });
-                      }
-                    },
-                  ),
-                  RadioListTile(
-                    title: const Text('Темная'),
-                    value: ThemeMode.dark,
-                    groupValue: currentTheme,
-                    onChanged: (ThemeMode? value) {
-                      if (value != null) {
-                        MainApp.of(context)?.changeTheme(value);
-                        setState(() {
-                          currentTheme = value;
-                        });
-                      }
-                    },
-                  ),
-                  RadioListTile(
-                    title: const Text('Системная'),
-                    value: ThemeMode.system,
-                    groupValue: currentTheme,
-                    onChanged: (ThemeMode? value) {
-                      if (value != null) {
-                        MainApp.of(context)?.changeTheme(value);
-                        setState(() {
-                          currentTheme = value;
-                        });
-                      }
-                    },
-                  ),
-                ],
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  _showColorButtons = !_showColorButtons;
+                });
+              },
+              child: Text('ВЫБЕРИ ЦВЕТ ЭКРАНА'),
+            ),
+
+            if (_showColorButtons) ...[
+              SizedBox(height: 20),
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children:
+                    _colorOptions.entries.map((entry) {
+                      return ElevatedButton(
+                        onPressed: () => _changeAllWindowsColor(entry.value),
+                        child: Text(
+                          entry.key,
+                          style: TextStyle(
+                            color:
+                                entry.value.computeLuminance() > 0.5
+                                    ? Colors.black
+                                    : Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: entry.value,
+                        ),
+                      );
+                    }).toList(),
               ),
+            ],
+
+            SizedBox(height: 40),
+            Text('Другие окна:'),
+            Row(
+              children: [
+                _buildWindowButton(context, 'Окно 2', '/second'),
+                _buildWindowButton(context, 'Окно 3', '/third'),
+                _buildWindowButton(context, 'Окно 4', '/fourth'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWindowButton(BuildContext context, String text, String route) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+        onPressed: () => Navigator.pushNamed(context, route),
+        child: Text(text),
+      ),
+    );
+  }
+}
+
+// Остальные окна имеют одинаковую структуру
+class SecondWindow extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Окно 2')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Это второе окно'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Назад'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ThirdWindow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Окно 3')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Это третье окно'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Назад'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class FourthWindow extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Окно 4')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Это четвертое окно'),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Назад'),
             ),
           ],
         ),

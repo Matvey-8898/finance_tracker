@@ -66,12 +66,12 @@ class MainAppState extends State<MainApp> {
       themeMode: themeMode,
       routes: {
         "/": (context) => const NavigationWrapper(),
-        "/home": (context) => const HomeScreen(),
-        "/feed": (context) => const FeedScreen(),
+        "/home": (context) => FinanceSummaryScreen(),
+        "/feed": (context) => FinanceVisualizerApp(),
         "/chat": (context) => const ChatScreen(),
         "/auth": (context) => const AuthScreen(),
         "/register": (context) => const RegisterScreen(),
-        "/services": (context) => const ServicesScreen(),
+        "/services": (context) => FinanceTracker(),
         "/account": (context) => const AccountScreen(),
       },
     );
