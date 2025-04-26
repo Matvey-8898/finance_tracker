@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/features/feed/domain/feed_entry.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 
@@ -30,34 +31,70 @@ class _FinanceVisualizerScreenState extends State<FinanceVisualizerScreen> {
   double income = 0;
   double expense = 0;
   bool isLoading = true;
+  Map<String, double> incomes = {};
+  Map<String, double> expenses = {};
+  double totalIncome = 0;
+  double totalExpense = 0;
+  double balance = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadFinancialData();
+    _loadFinanceData();
   }
 
-  Future<void> _loadFinancialData() async {
+  Future<void> _loadFinanceData() async {
     final prefs = await SharedPreferences.getInstance();
 
+    // Загрузка доходов
+    incomes = {};
+    totalIncome = 0;
+    final allKeys = prefs.getKeys();
+    for (var key in allKeys) {
+      if (key.startsWith('income_')) {
+        final category = key.replaceFirst('income_', '');
+        final value = prefs.getDouble(key) ?? 0;
+        if (value > 0) {
+          incomes[category] = value;
+          totalIncome += value;
+        }
+      }
+    }
+
+    // Загрузка расходов
+    expenses = {};
+    totalExpense = 0;
+    for (var key in allKeys) {
+      if (key.startsWith('expense_')) {
+        final category = key.replaceFirst('expense_', '');
+        final value = prefs.getDouble(key) ?? 0;
+        if (value < 0) {
+          expenses[category] = value;
+          totalExpense += value;
+        }
+      }
+    }
+
+    // Расчет общего баланса
+    balance = totalIncome + totalExpense;
+
     setState(() {
-      income = prefs.getDouble('total_income') ?? 0;
-      expense = (prefs.getDouble('total_expense') ?? 0).abs();
       isLoading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final total = income + expense;
-    final incomePercent = total > 0 ? (income / total) : 0.0;
-    final expensePercent = total > 0 ? (expense / total) : 0.0;
+    final total = totalIncome + -1*totalExpense;
+    final incomePercent = total > 0 ? (totalIncome / total) : 0.0;
+    print(incomePercent);
+    final expensePercent = total > 0 ? (totalExpense / total) : 0.0;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Финансовая аналитика'),
         actions: [
-          IconButton(icon: Icon(Icons.refresh), onPressed: _loadFinancialData),
+          IconButton(icon: Icon(Icons.refresh), onPressed: _loadFinanceData),
         ],
       ),
       body:

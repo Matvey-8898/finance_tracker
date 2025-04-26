@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Entry {
@@ -29,7 +31,7 @@ class Entry {
     return Entry(
       id: json['id'],
       title: json['title'],
-      description: json['desceiption'],
+      description: json['description'],
       content: json['content'],
       dateAdded: json['dateAdded'],
     );
@@ -63,13 +65,12 @@ class Entry {
   }
 
   static List<Entry> decodeEntries(String entriesString) {
-  //   try {
-  //     final List<dynamic> jsonList = List<dynamic>.from(eval(entriesString));
-  //     return jsonList.map((json) => Entry.fromJson(json)).toList();
-  //   } catch (e) {
-  //     return [];
-  //   }
-  // }
-    return [];
+    try {
+      final List<dynamic> jsonList = json.decode(entriesString);
+      return jsonList.map((json) => Entry.fromJson(json)).toList();
+    } catch (e) {
+      print('Error decoding entries: $e');
+      return [];
+    }
   }
 }
